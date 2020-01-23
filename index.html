@@ -1,0 +1,194 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <style>
+            *,*::before,*::after {
+              box-sizing: border-box;
+            }
+
+            html {
+              font-family: sans-serif;
+              line-height: 1.15;
+              -webkit-text-size-adjust: 100%;
+              -ms-text-size-adjust: 100%;
+              -ms-overflow-style: scrollbar;
+              -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            }
+
+            article, aside, dialog, figcaption, figure, footer, header, hgroup, main, nav, section {
+              display: block;
+            }
+
+            body {
+              margin: 0;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+              font-size: 1rem;
+              font-weight: 400;
+              line-height: 1.5;
+              color: #212529;
+              text-align: left;
+              background-color: #fff;
+            }
+
+            .greenscreen {
+                background: #009933;
+            }
+            .banner {
+                width:1080px;
+                margin: 10px auto;
+            }
+
+            .control-panel {
+                position: fixed;
+                bottom:0;
+                width: 100%;
+                text-align: center;
+                padding: 1rem 0
+            }
+
+            input {
+                max-width: 100px;
+            }
+
+        </style>
+    </head>
+    <body class="greenscreen">
+        <div class="banner">
+            <img src="https://media.giphy.com/media/l56sRHrlQufjEjZfwQ/source.gif">
+        </div>
+
+        <div class="control-panel bg-light ">
+            <div class="container">
+                <div class="row align-items-center justify-content-between">
+                    <div class="d-flex col-4">
+                        <div class="input-group mr-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Show for:</span>
+                              </div>
+                              <input type="number" class="form-control text-center" id="showTime" min="1" value="2" aria-label="Username" aria-describedby="basic-addon1">
+                        </div>
+                        <div class="input-group mr-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Hide for:</span>
+                              </div>
+                              <input type="number" class="form-control text-center" id="hideTime" min="1" value="58" aria-label="Username" aria-describedby="basic-addon1">
+                        </div>
+                    </div>
+                    <div class="btn-group col-6" role="group">
+                        <button class="startTimer btn btn-secondary">Start</button>
+                        <button class="pauseTimer btn btn-secondary">Pause</button>
+                        <!--<button class="resetTimer btn btn-secondary">Reset</button> -->
+                        <button class="showBanner btn btn-secondary">Show Banner</button>
+                        <button class="hideBanner btn btn-secondary">Hide Banner</button>
+                    </div>
+                    <div class="timer col-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script>
+        jQuery(document).ready(function($) {
+            var banner = $('.banner')
+                timer = null,
+                interval = 1000,
+                userShowTime = $('#showTime').val(),
+                userHideTime = $('#hideTime').val(),
+                showDistance = 0,
+                hideDistance = 0,
+                hiddenFor = 0,
+                shownFor = 0;
+
+
+            $('body').on('change', '#hideTime', function(){
+                userHideTime = $(this).val();
+            });
+
+            $('body').on('change', '#showTime', function(){
+                userShowTime = $(this).val();
+            });
+
+            function showBanner() {
+                banner.fadeIn('slow');
+            }
+
+            function hideBanner() {
+                banner.fadeOut('slow');
+            }
+
+            function startTimer() {
+                if(timer !== null) return;
+
+                hideBanner();
+
+                showTime = userShowTime*1000*60;
+                hideTime = userHideTime*1000*60;
+
+                timer = setInterval(function(){
+
+                    hiddenFor = hiddenFor+1000;
+                    showDistance = hideTime - hiddenFor;
+                    var showInMin = Math.floor((showDistance % (1000 * 60 * 60)) / (1000 * 60));
+                    var showInSec = Math.floor((showDistance % (1000 * 60)) / 1000);
+
+                    if(showDistance <= 0) {
+
+                        showBanner();
+
+                        shownFor = shownFor+1000;
+                        hideDistance = showTime - shownFor;
+                        var hideInMin = Math.floor((hideDistance % (1000 * 60 * 60)) / (1000 * 60));
+                        var hideInSec = Math.floor((hideDistance % (1000 * 60)) / 1000);
+
+                        if(hideDistance <= 0) {
+                            hideBanner();
+                            shownFor = 0;
+                            hiddenFor = 0;
+                        }
+
+                    }
+
+                    if(showDistance > 0) {
+                        $('.timer').text('Show in: '+showInMin + "m " + showInSec + "s ");
+                    } else {
+                        $('.timer').text('Hide in: '+hideInMin + "m " + hideInSec + "s ");
+                    }
+
+                    console.log( 'Show Time: '+showTime, 'Hide Time: '+hideTime, 'Show Distance: '+showDistance, 'Hide Distance: '+hideDistance, 'Hidden For: '+hiddenFor, 'Shown For:'+shownFor);
+                }, interval);
+
+
+            }
+
+
+            function pauseTimer() {
+                clearInterval(timer);
+                timer = null;
+            }
+
+
+
+            $('body').on('click', '.startTimer',function(){
+                startTimer();
+            });
+
+            $('body').on('click', '.pauseTimer',function(){
+                pauseTimer();
+            });
+            $('body').on('click', '.resetTimer',function(){
+                resetTimer();
+            });
+
+            $('body').on('click', '.showBanner',function(){
+                showBanner();
+            });
+
+            $('body').on('click', '.hideBanner',function(){
+                hideBanner();
+            });
+
+
+        });
+    </script>
+</html>
